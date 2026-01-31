@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Brian Official | Space Channel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --space-bg: #0b0b0d;
+            --primary-neon: #7c3aed;
+            --secondary-neon: #06b6d4;
+                    --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --whatsapp-bg: #0b141a;
+            --msg-bg: #1f2c33;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: var(--space-bg); color: var(--text-main); overflow-x: hidden; }
+
+        .stars-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #050505 100%);
+        }
+
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(11, 20, 26, 0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .p-profile-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--secondary-neon); }
+        .header-info h2 { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .verified-badge { width: 16px; fill: #20ad59; }
+        .follower-count { font-size: 0.75rem; color: var(--text-dim); }
+
+        .btn-follow {
+            background: #fff; color: #000; border: none; padding: 7px 18px;
+            border-radius: 20px; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
+        }
+        .btn-follow.following { background: var(--glass); color: var(--text-dim); border: 1px solid var(--glass-border); cursor: default; }
+
+        .chat-container { max-width: 600px; margin: 0 auto; padding: 20px 16px 100px; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* Message Card Styles */
+        .msg-card {
+            background: var(--msg-bg); border-radius: 12px; padding: 6px;
+            max-width: 90%; align-self: flex-start; position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); overflow: hidden;
+        }
+        .msg-image, .msg-video { width: 100%; border-radius: 8px; display: block; margin-bottom: 5px; }
+        .msg-audio { width: 100%; height: 45px; margin: 5px 0; border-radius: 30px; }
+        .msg-text { font-size: 0.95rem; padding: 5px 8px; line-height: 1.5; color: #e9edef; }
+        .msg-footer { display: flex; justify-content: flex-end; padding: 2px 8px; margin-top: 2px; }
+        .msg-time { font-size: 0.65rem; color: #8696a0; }
+
+        /* Profile & Modal (Sama seperti sebelumnya dengan sedikit polesan) */
+        .profile-overlay {
+            position: fixed; inset: 0; background: var(--whatsapp-bg); z-index: 2000;
+            transform: translateY(100%); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+        .profile-overlay.open { transform: translateY(0); }
+        .close-btn { position: absolute; top: 20px; left: 20px; font-size: 1.5rem; cursor: pointer; z-index: 10; }
+        .profile-content { text-align: center; padding: 60px 20px; }
+        .profile-large-img { width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--primary-neon); margin-bottom: 15px; }
+        .profile-desc { margin-top: 30px; text-align: left; background: var(--glass); padding: 20px; border-radius: 16px; border: 1px solid var(--glass-border); }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; place-items: center; z-index: 3000; backdrop-filter: blur(5px); }
+        .modal-content { background: #233138; padding: 30px; border-radius: 24px; width: 90%; max-width: 350px; text-align: center; }
+        .modal-content input { width: 100%; padding: 14px; margin: 20px 0; background: #111b21; border: 1px solid var(--glass-border); border-radius: 12px; color: #fff; outline: none; }
+        .btn-confirm { background: #00a884; color: #fff; border: none; width: 100%; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="stars-container"></div>
+
+<header>
+    <div class="header-left" onclick="toggleProfile()">
+        <img src="" alt="Profile" class="p-profile-img" id="headerImg">
+        <div class="header-info">
+            <h2 id="headerName">
+                <svg class="verified-badge" viewBox="0 0 24 24"><path d="M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"></path></svg>
+            </h2>
+            <span class="follower-count" id="followerCounter">0 followers</span>
+        </div>
+    </div>
+    <button class="btn-follow" id="followBtn" onclick="requestFollow()">Ikuti</button>
+</header>
+
+<div class="chat-container" id="chatContainer"></div>
+
+<div class="profile-overlay" id="profileOverlay">
+    <div class="close-btn" onclick="toggleProfile()">✕</div>
+    <div class="profile-content">
+        <img src="" class="profile-large-img" id="detailImg">
+        <h1 id="detailName" style="display:flex; justify-content:center; align-items:center; gap:8px;"></h1>
+        <p style="color:var(--text-dim)" id="detailFollowers"></p>
+        <div class="profile-desc">
+            <h4 style="color:#fff; margin-bottom:8px;">Deskripsi</h4>
+            <p id="channelDesc" style="color:var(--text-dim); font-size: 0.9rem; line-height: 1.6;"></p>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="nameModal">
+    <div class="modal-content">
+        <h3 style="color:#fff">Ikuti Saluran?</h3>
+        <p style="font-size:0.85rem; color:var(--text-dim); margin-top:8px;">Masukkan nama Anda untuk melihat pembaruan dari saluran ini.</p>
+        <input type="text" id="userNameInput" placeholder="Ketik nama Anda...">
+        <button class="btn-confirm" onclick="confirmFollow()">Konfirmasi</button>
+    </div>
+</div>
+
+<script>
+    // --- METADATA SALURAN ---
+    const channelData = {
+        name: "Brian Official",
+        profilePic: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSwcaelDy4Gs0HYYohpI0Fss40Xndcy6WgDmnjRG_RpQ&s=10",
+        description: "Saluran resmi Brian Official🗿😹. Update terbaru, gabut, dan hal random lainnya.",
+        baseFollowers: 438 // Angka dasar (global)
+    };
+
+    // --- DATA PESAN (Isi Konten Chat) ---
+    const messages = [
+        {
+            id: 1,
+            type: "text",
+            text: "Halo 🗿😹",
+            time: "02:04 PM"
+        },
+        {
+            id: 2,
+            type: "image_text",
+            image: "https://ik.imagekit.io/glnwdmssex/2026-01-31-15-56-12-071.jpg",
+            text: "Gabut Anjir 🗿",
+            time: "04:00 PM"
+        },
+        {
+            id: 3,
+            type: "video_text",
+            video: "https://ik.imagekit.io/glnwdmssex/lv_0_20260131164028.mp4", // Ganti URL Video
+            text: "🗿",
+            time: "05:12 PM"
+        }
+    ];
+
+    // --- LOGIC SYSTEM ---
+
+    function initChannel() {
+        // Cek LocalStorage untuk Status Follow
+        const isFollowing = localStorage.getItem('isFollowing') === 'true';
+        const extraFollower = isFollowing ? 1 : 0;
+
+        // Render Data Profil
+        document.getElementById('headerName').prepend(channelData.name);
+        document.getElementById('detailName').innerText = channelData.name;
+        document.getElementById('headerImg').src = channelData.profilePic;
+        document.getElementById('detailImg').src = channelData.profilePic;
+        document.getElementById('channelDesc').innerText = channelData.description;
+
+        if (isFollowing) {
+            const btn = document.getElementById('followBtn');
+            btn.innerText = "Mengikuti";
+            btn.classList.add('following');
+        }
+
+        updateFollowerUI(channelData.baseFollowers + extraFollower);
+        renderMessages();
+    }
+
+    function renderMessages() {
+        const container = document.getElementById('chatContainer');
+        messages.forEach(msg => {
+            const card = document.createElement('div');
+            card.className = 'msg-card';
+            
+            let content = '';
+            
+            if (msg.type === "image_text") {
+                content += `<img src="${msg.image}" class="msg-image">`;
+            } else if (msg.type === "audio_text") {
+                content += `<audio controls class="msg-audio"><source src="${msg.audio}" type="audio/mpeg"></audio>`;
+            } else if (msg.type === "video_text") {
+                content += `<video controls class="msg-video"><source src="${msg.video}" type="video/mp4"></video>`;
+            }
+
+            content += `<div class="msg-text">${msg.text}</div>`;
+            content += `<div class="msg-footer"><span class="msg-time">${msg.time}</span></div>`;
+            
+            card.innerHTML = content;
+            container.appendChild(card);
+        });
+    }
+
+    function updateFollowerUI(count) {
+        const text = `${count.toLocaleString()} followers`;
+        document.getElementById('followerCounter').innerText = text;
+        document.getElementById('detailFollowers').innerText = text;
+    }
+
+    function toggleProfile() {
+        document.getElementById('profileOverlay').classList.toggle('open');
+    }
+
+    function requestFollow() {
+        if (!document.getElementById('followBtn').classList.contains('following')) {
+            document.getElementById('nameModal').style.display = 'grid';
+        }
+    }
+
+    function confirmFollow() {
+        const nameInput = document.getElementById('userNameInput');
+        const name = nameInput.value;
+        if (name.trim() === "") return alert("Masukkan nama dulu bos!");
+
+        // Simpan Status secara "Permanen" di Browser
+        localStorage.setItem('isFollowing', 'true');
+        localStorage.setItem('followerName', name);
+
+        // Update UI secara Instan
+        updateFollowerUI(channelData.baseFollowers + 1);
+        const btn = document.getElementById('followBtn');
+        btn.innerText = "Mengikuti";
+        btn.classList.add('following');
+        
+        document.getElementById('nameModal').style.display = 'none';
+        alert(`Selamat bergabung, ${name}!`);
+    }
+
+    // Jalankan saat load
+    initChannel();
+</script>
+
+</body>
+</html>
